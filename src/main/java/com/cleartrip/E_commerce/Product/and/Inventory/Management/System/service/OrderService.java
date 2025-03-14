@@ -13,6 +13,19 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    // Add custom exceptions
+    public static class InsufficientStockException extends RuntimeException {
+        public InsufficientStockException(String message) {
+            super(message);
+        }
+    }
+
+    public static class EmptyCartException extends RuntimeException {
+        public EmptyCartException(String message) {
+            super(message);
+        }
+    }
+
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final InventoryRepository inventoryRepository;
@@ -21,58 +34,69 @@ public class OrderService {
     @Transactional
     public Order placeOrder(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found for user: " + userId));
 
         if (cart.getItems().isEmpty()) {
-            throw new RuntimeException("Cart is empty");
+            throw new EmptyCartException("Cannot place order with empty cart");
         }
 
-        // Validate and update inventory
-        for (CartItem item : cart.getItems()) {
+        validateAndUpdateInventory(cart.getItems());
+        Order order = createOrderFromCart(cart, user);
+        cartRepository.delete(cart);
+
+        return orderRepository.save(order);
+    }
+
+    private void validateAndUpdateInventory(List<CartItem> items) {
+        for (CartItem item : items) {
             Inventory inventory = inventoryRepository.findByProduct(item.getProduct())
-                    .orElseThrow(() -> new RuntimeException("Inventory not found for product: " + item.getProduct().getName()));
+                    .orElseThrow(() -> new ResourceNotFoundException(
+                        "Inventory not found for product: " + item.getProduct().getName()));
 
             if (inventory.getQuantity() < item.getQuantity()) {
-                throw new RuntimeException("Insufficient stock for product: " + item.getProduct().getName());
+                throw new InsufficientStockException(
+                    "Insufficient stock for product: " + item.getProduct().getName());
             }
 
-            // Update inventory
             inventory.setQuantity(inventory.getQuantity() - item.getQuantity());
             inventoryRepository.save(inventory);
         }
+    }
 
-        // Create order
+    private Order createOrderFromCart(Cart cart, User user) {
         Order order = new Order();
         order.setUser(user);
         order.setStatus(OrderStatus.PENDING);
         order.setOrderDate(LocalDateTime.now());
+        order.setTotalAmount(calculateOrderTotal(cart.getItems(), order));
+        return order;
+    }
 
+    private BigDecimal calculateOrderTotal(List<CartItem> items, Order order) {
         BigDecimal totalAmount = BigDecimal.ZERO;
-
-        // Copy items from cart to order
-        for (CartItem cartItem : cart.getItems()) {
-            OrderItem orderItem = new OrderItem();
-            orderItem.setOrder(order);
-            orderItem.setProduct(cartItem.getProduct());
-            orderItem.setQuantity(cartItem.getQuantity());
-            orderItem.setPriceAtTime(cartItem.getProduct().getPrice());
+        
+        for (CartItem cartItem : items) {
+            OrderItem orderItem = createOrderItem(cartItem, order);
             order.getItems().add(orderItem);
-
-            // Calculate item total and add to order total
+            
             BigDecimal itemTotal = cartItem.getProduct().getPrice()
                     .multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             totalAmount = totalAmount.add(itemTotal);
         }
+        
+        return totalAmount;
+    }
 
-        order.setTotalAmount(totalAmount);
-
-        // Clear cart
-        cartRepository.delete(cart);
-
-        return orderRepository.save(order);
+    private OrderItem createOrderItem(CartItem cartItem, Order order) {
+        OrderItem orderItem = new OrderItem();
+        orderItem.setOrder(order);
+        orderItem.setProduct(cartItem.getProduct());
+        orderItem.setQuantity(cartItem.getQuantity());
+        orderItem.setPriceAtTime(cartItem.getProduct().getPrice());
+        return orderItem;
     }
 
     public List<Order> getOrdersByUserId(Long userId) {
