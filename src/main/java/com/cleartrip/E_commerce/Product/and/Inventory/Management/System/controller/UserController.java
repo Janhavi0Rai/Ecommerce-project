@@ -3,11 +3,17 @@ package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.control
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDTO;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDTO;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.User;
+import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service.JwtService;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -15,6 +21,8 @@ import java.util.List;
 @CrossOrigin
 public class UserController {
     private final UserService userService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<User> registerUser(@RequestBody UserRegistrationDTO registrationDTO) {
@@ -23,9 +31,15 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> loginUser(@RequestBody UserLoginDTO loginDTO) {
-        User loggedInUser = userService.loginUser(loginDTO);
-        return ResponseEntity.ok(loggedInUser);
+    public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserLoginDTO loginDTO) {
+        Authentication authentication = authenticationManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginDTO.getEmail(), loginDTO.getPassword())
+        );
+        
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String token = jwtService.generateToken(userDetails);
+        
+        return ResponseEntity.ok(Map.of("token", token));
     }
 
     @GetMapping
