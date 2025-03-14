@@ -1,4 +1,3 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service;
 
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.Product;
@@ -20,7 +19,15 @@ public class ProductService {
         return productRepository.findByCategory(category);
     }
 
+    public List<Product> searchProducts(String name) {
+        return productRepository.findByNameContainingIgnoreCase(name);
+    }
+
     public Product saveProduct(Product product) {
         return productRepository.save(product);
+    }
+
+    public void deleteProduct(Long id) {
+        productRepository.deleteById(id);
     }
 }
