@@ -1,5 +1,6 @@
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service;
 
+import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDTO;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDto;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDto;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.User;
@@ -32,7 +33,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User loginUser(UserLoginDto loginDto) {
+    public User loginUser(UserLoginDTO loginDto) {
         // Find user by email
         Optional<User> userOpt = userRepository.findByEmail(loginDto.getEmail());
 

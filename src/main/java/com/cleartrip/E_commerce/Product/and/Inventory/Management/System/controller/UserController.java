@@ -1,8 +1,8 @@
 
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.controller;
 
-import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDto;
-import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDto;
+import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDTO;
+import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDTO;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.User;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +18,13 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<User> registerUser(@RequestBody UserRegistrationDTO registrationDto) {
         User user = userService.registerUser(registrationDto);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> loginUser(@RequestBody UserLoginDto loginDto) {
+    public ResponseEntity<User> loginUser(@RequestBody UserLoginDTO loginDto) {
         User user = userService.loginUser(loginDto);
         return ResponseEntity.ok(user);
     }
