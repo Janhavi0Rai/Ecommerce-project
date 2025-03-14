@@ -1,7 +1,8 @@
+
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+        import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
@@ -10,25 +11,23 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "products")
-public class Product {
+@Table(name = "order_items")
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
+
     @Column(nullable = false)
-    private String name;
-
-    @Column(length = 1000)
-    private String description;
+    private Integer quantity;
 
     @Column(nullable = false)
-    private BigDecimal price;
-
-    @Column(nullable = false)
-    private String category;
-
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
-    private Inventory inventory;
+    private BigDecimal priceAtTime;
 }
-

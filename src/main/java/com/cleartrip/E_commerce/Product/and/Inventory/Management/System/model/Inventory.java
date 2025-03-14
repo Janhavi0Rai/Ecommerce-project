@@ -1,17 +1,15 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model;
 
-import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.Product;
 import jakarta.persistence.*;
-        import lombok.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Entity
-@Table(name = "inventory")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Entity
+@Table(name = "inventory")
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,5 +19,6 @@ public class Inventory {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    private int stockQuantity;
+    @Column(nullable = false)
+    private Integer quantity;
 }

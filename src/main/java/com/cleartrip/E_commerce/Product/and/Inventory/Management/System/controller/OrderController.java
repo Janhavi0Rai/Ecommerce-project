@@ -1,4 +1,3 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.controller;
 
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.Order;
@@ -6,7 +5,7 @@ import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service.
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-        import java.util.List;
+import java.util.List;
 
 @RestController
 @RequestMapping("/orders")
@@ -19,8 +18,8 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
     }
 
-    @PostMapping("/place")
-    public ResponseEntity<Order> placeOrder(@RequestBody Order order) {
-        return ResponseEntity.ok(orderService.placeOrder(order));
+    @PostMapping("/place/{userId}")
+    public ResponseEntity<Order> placeOrder(@PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.placeOrder(userId));
     }
 }
