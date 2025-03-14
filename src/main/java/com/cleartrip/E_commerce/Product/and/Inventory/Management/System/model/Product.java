@@ -1,15 +1,15 @@
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 
+@Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
 @Table(name = "products")
 public class Product {
     @Id
@@ -19,7 +19,7 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Column(nullable = false)
@@ -28,7 +28,7 @@ public class Product {
     @Column(nullable = false)
     private String category;
 
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
-    private Inventory inventory;
+    @Column(nullable = false)
+    private Integer stockQuantity;
 }
 

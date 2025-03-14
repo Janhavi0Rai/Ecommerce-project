@@ -1,10 +1,10 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model;
 
 import jakarta.persistence.*;
-        import lombok.Data;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Data
 @NoArgsConstructor
@@ -18,6 +18,7 @@ public class CartItem {
 
     @ManyToOne
     @JoinColumn(name = "cart_id", nullable = false)
+    @JsonBackReference
     private Cart cart;
 
     @ManyToOne

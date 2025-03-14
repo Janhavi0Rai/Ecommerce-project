@@ -21,4 +21,10 @@ public class Inventory {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "min_quantity")
+    private Integer minimumQuantity = 0;
+
+    @Column(name = "max_quantity")
+    private Integer maximumQuantity;
 }

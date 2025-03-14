@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.cleartrip</groupId>
-	<artifactId>E-commerce-Product-and-Inventory-Management-System</artifactId>
+	<artifactId>ecommerce</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>E-commerce-Product-and-Inventory-Management-System</name>
 	<description>Evaluation project</description>
@@ -27,7 +27,7 @@
 		<url/>
 	</scm>
 	<properties>
-		<java.version>23</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

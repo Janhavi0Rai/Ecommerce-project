@@ -1,10 +1,10 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model;
 
 import jakarta.persistence.*;
-        import lombok.Data;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,5 +23,6 @@ public class Cart {
     private User user;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<CartItem> items = new ArrayList<>();
 }

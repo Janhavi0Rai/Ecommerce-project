@@ -8,18 +8,27 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 @RequiredArgsConstructor
+@CrossOrigin
 public class OrderController {
     private final OrderService orderService;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Order>> getOrdersByUserId(@PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.getOrdersByUserId(userId));
+    @PostMapping("/place")
+    public ResponseEntity<Order> placeOrder(@RequestParam Long userId) {
+        Order order = orderService.placeOrder(userId);
+        return ResponseEntity.ok(order);
     }
 
-    @PostMapping("/place/{userId}")
-    public ResponseEntity<Order> placeOrder(@PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.placeOrder(userId));
+    @GetMapping("/{orderId}")
+    public ResponseEntity<Order> getOrderDetails(@PathVariable Long orderId) {
+        Order order = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(order);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Order>> getOrderHistory(@PathVariable Long userId) {
+        List<Order> orders = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orders);
     }
 }

@@ -23,24 +23,15 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItem> items = new ArrayList<>();
+    @Column(nullable = false)
+    private LocalDateTime orderDate;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus status;
 
     @Column(nullable = false)
     private BigDecimal totalAmount;
 
-    @Column(nullable = false)
-    private LocalDateTime orderDate = LocalDateTime.now();
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrderStatus status = OrderStatus.PENDING;
-}
-
-enum OrderStatus {
-    PENDING,
-    CONFIRMED,
-    SHIPPED,
-    DELIVERED,
-    CANCELLED
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> items = new ArrayList<>();
 }

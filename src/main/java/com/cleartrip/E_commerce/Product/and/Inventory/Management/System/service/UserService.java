@@ -1,8 +1,7 @@
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service;
 
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDTO;
-import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserLoginDto;
-import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDto;
+import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.dto.UserRegistrationDTO;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.User;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.UserRole;
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.repository.UserRepository;
@@ -17,18 +16,26 @@ import java.util.Optional;
 public class UserService {
     private final UserRepository userRepository;
 
-    public User registerUser(UserRegistrationDto registrationDto) {
-        // Check if user already exists
-        if (userRepository.existsByEmail(registrationDto.getEmail())) {
+    public User registerUser(UserRegistrationDTO registrationDTO) {
+        // Check if email is already registered
+        if (userRepository.existsByEmail(registrationDTO.getEmail())) {
             throw new RuntimeException("Email already registered");
         }
 
-        // Create new user
+        // Check if username is already taken
+        if (userRepository.existsByUsername(registrationDTO.getUsername())) {
+            throw new RuntimeException("Username already taken");
+        }
+
         User user = new User();
-        user.setName(registrationDto.getName());
-        user.setEmail(registrationDto.getEmail());
-        user.setPassword(registrationDto.getPassword()); // In a real app, password should be encrypted
-        user.setRole(UserRole.valueOf(registrationDto.getRole().toUpperCase()));
+        user.setUsername(registrationDTO.getUsername());
+        user.setEmail(registrationDTO.getEmail());
+        user.setPassword(registrationDTO.getPassword()); // Note: In a real application, you should encrypt the password
+        user.setFirstName(registrationDTO.getFirstName());
+        user.setLastName(registrationDTO.getLastName());
+        user.setAddress(registrationDTO.getAddress());
+        user.setPhoneNumber(registrationDTO.getPhoneNumber());
+        user.setRole(UserRole.CUSTOMER); // Set default role as CUSTOMER
 
         return userRepository.save(user);
     }
@@ -57,5 +64,24 @@ public class UserService {
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public User updateUser(Long id, String firstName, String lastName, 
+                         String address, String phoneNumber) {
+        User user = getUserById(id);
+        
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setAddress(address);
+        user.setPhoneNumber(phoneNumber);
+
+        return userRepository.save(user);
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found");
+        }
+        userRepository.deleteById(id);
     }
 }

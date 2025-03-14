@@ -1,4 +1,3 @@
-
 package com.cleartrip.E_commerce.Product.and.Inventory.Management.System.service;
 
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.model.Cart;
@@ -12,6 +11,8 @@ import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.reposito
 import com.cleartrip.E_commerce.Product.and.Inventory.Management.System.repository.InventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -24,57 +25,92 @@ public class CartService {
 
     @Transactional
     public Cart addToCart(Long userId, Long productId, Integer quantity) {
+        if (userId == null || productId == null || quantity == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID, Product ID, and quantity are required");
+        }
+
+        if (quantity <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
+        }
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + userId));
+        
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with ID: " + productId));
 
         // Check inventory
         Inventory inventory = inventoryRepository.findByProduct(product)
-                .orElseThrow(() -> new RuntimeException("Inventory not found for product"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Inventory not found for product: " + product.getName()));
+        
         if (inventory.getQuantity() < quantity) {
-            throw new RuntimeException("Insufficient stock. Available: " + inventory.getQuantity());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Insufficient stock. Available: " + inventory.getQuantity() + " for product: " + product.getName());
         }
 
-        Cart cart = cartRepository.findByUser(user)
-                .orElseGet(() -> {
-                    Cart newCart = new Cart();
-                    newCart.setUser(user);
-                    return newCart;
-                });
+        try {
+            Cart cart = cartRepository.findByUser(user)
+                    .orElseGet(() -> {
+                        Cart newCart = new Cart();
+                        newCart.setUser(user);
+                        return newCart;
+                    });
 
-        CartItem cartItem = cart.getItems().stream()
-                .filter(item -> item.getProduct().getId().equals(productId))
-                .findFirst()
-                .orElseGet(() -> {
-                    CartItem newItem = new CartItem();
-                    newItem.setCart(cart);
-                    newItem.setProduct(product);
-                    cart.getItems().add(newItem);
-                    return newItem;
-                });
+            CartItem cartItem = cart.getItems().stream()
+                    .filter(item -> item.getProduct().getId().equals(productId))
+                    .findFirst()
+                    .orElseGet(() -> {
+                        CartItem newItem = new CartItem();
+                        newItem.setCart(cart);
+                        newItem.setProduct(product);
+                        cart.getItems().add(newItem);
+                        return newItem;
+                    });
 
-        cartItem.setQuantity(quantity);
-        return cartRepository.save(cart);
+            cartItem.setQuantity(quantity);
+            return cartRepository.save(cart);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Error adding product to cart: " + e.getMessage());
+        }
     }
 
     @Transactional
     public Cart removeFromCart(Long userId, Long productId) {
+        if (userId == null || productId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID and Product ID are required");
+        }
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + userId));
 
         Cart cart = cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found for user with ID: " + userId));
 
-        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
-        return cartRepository.save(cart);
+        boolean removed = cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        
+        if (!removed) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, 
+                "Product with ID: " + productId + " not found in cart");
+        }
+
+        try {
+            return cartRepository.save(cart);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, 
+                "Error removing product from cart: " + e.getMessage());
+        }
     }
 
     public Cart getCartByUserId(Long userId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User ID is required");
+        }
+
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found with ID: " + userId));
 
         return cartRepository.findByUser(user)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cart not found for user with ID: " + userId));
     }
 }
